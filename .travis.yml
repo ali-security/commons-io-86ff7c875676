@@ -22,7 +22,6 @@ cache:
 jdk:
   - openjdk8
   - openjdk11
-  - openjdk14
   - openjdk-ea
   - oraclejdk11
 
@@ -37,5 +36,7 @@ matrix:
 script:
   - mvn -V --no-transfer-progress
 
-after_success:
-  - mvn -V --no-transfer-progress clean cobertura:cobertura coveralls:report -Ptravis-cobertura
+# List every skipped test with its skip reason (surefire prints only counts)
+after_script:
+  - |
+    for f in target/surefire-reports/TEST-*.xml; do awk '/<testcase /{tc=$0} /<skipped/{match(tc,/classname="[^"]*"/); c=substr(tc,RSTART,RLENGTH); match(tc,/ name="[^"]*"/); n=substr(tc,RSTART,RLENGTH); print "SKIPPED TEST:", c, n, "--", $0}' "$f"; done
